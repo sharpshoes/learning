@@ -8,7 +8,6 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import org.omg.CORBA.SystemException;
-import org.reactivestreams.Subscriber;
 
 import java.util.ArrayList;
 import java.util.Arrays;

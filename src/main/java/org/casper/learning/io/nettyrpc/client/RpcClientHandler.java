@@ -8,38 +8,47 @@ import org.casper.learning.io.nettyrpc.protocol.RpcResponse;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Handler;
 
 public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
 
     private Channel channel = null;
 
-    private Map<String, RpcFuture> rpcFutureMap = new java.util.concurrent.ConcurrentHashMap<>();
-//    private Map<String, RpcRequest> requestMap = new ConcurrentHashMap<>();
+    private Map<String, RpcFuture> rpcFutureMap = new ConcurrentHashMap<>();
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         channel = ctx.channel();
+        ctx.fireChannelActive();
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcResponse rpcResponse) throws Exception {
         String requestId = rpcResponse.getRequestId();
-
+        if (rpcFutureMap.containsKey(requestId)) {
+            RpcFuture rpcFuture = rpcFutureMap.get(requestId);
+            rpcFutureMap.remove(requestId);
+            rpcFuture.finish(rpcResponse);
+        }
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
+
         ctx.close();
     }
 
     public RpcFuture call(RpcRequest request) {
 
-        return new RpcFuture(request);
+        RpcFuture rpcFuture = new RpcFuture(request);
+        this.channel.writeAndFlush(request);
+        String requestId = request.getRequestId();
+
+        this.rpcFutureMap.put(requestId, rpcFuture);
+        return rpcFuture;
     }
 
-    public RpcFuture call(RpcRequest request, int timeout) {
-        return null;
-    }
+    public static interface HandlerListener {
 
+    }
 }

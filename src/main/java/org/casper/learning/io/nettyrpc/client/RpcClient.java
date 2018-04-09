@@ -16,18 +16,35 @@ import org.casper.learning.io.nettyrpc.protocol.RpcRequest;
 import org.casper.learning.io.nettyrpc.protocol.RpcResponse;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 public class RpcClient {
 
-    EventLoopGroup group = new NioEventLoopGroup();
-    Bootstrap bootstrap = new Bootstrap();
-    RpcClientHandler handler = new RpcClientHandler();
+    private EventLoopGroup group = new NioEventLoopGroup();
+    private Bootstrap bootstrap = new Bootstrap();
+
+    private List<RpcClientHandler> handlerList = new ArrayList<>();
+    RpcClientHandler handler;
+
+    List<RpcClientHandler> handlerChache = new ArrayList<>();
+
+    private int timeout = -1;
+    private int count = 3;
+    private String host;
+    private int port;
 
     public RpcClient(String host, int port) {
-
+        try {
+            this.init(host, port);
+        } catch (InterruptedException iEx) {
+            iEx.printStackTrace();
+        }
     }
 
-    public void init(String host, int port) {
+    public void init(String host, int port) throws InterruptedException {
 
         bootstrap.group(group)
             .channel(NioSocketChannel.class)
@@ -42,10 +59,11 @@ public class RpcClient {
                         .addLast(new RpcClientHandler());
                 }
             });
+
+        this.connect();
     }
 
     public void connect() throws InterruptedException {
-
         ChannelFuture f = bootstrap.connect();
         f.addListener(new GenericFutureListener<ChannelFuture>() {
             @Override
@@ -57,18 +75,29 @@ public class RpcClient {
         });
     }
 
-    private void addHandler(RpcClientHandler handler) {
-
-//        connectedHandlers.add(handler);
-//        InetSocketAddress remoteAddress = (InetSocketAddress) handler.getChannel().remoteAddress();
-//        connectedServerNodes.put(remoteAddress, handler);
-//        signalAvailableHandler();
-    }
-
     public void shutdown() throws InterruptedException {
-
         group.shutdownGracefully().sync();
     }
 
+    public Object call(Class<?> clazz, String method, Class<?>[] paramTypes, Object[] params) {
+        RpcRequest rpcRequest = new RpcRequest();
 
+        rpcRequest.setClazz(clazz);
+        rpcRequest.setMethod(method);
+        rpcRequest.setParamTypes(paramTypes);
+        rpcRequest.setParams(params);
+        rpcRequest.setRequestId(UUID.randomUUID().toString());
+
+        RpcFuture rpcFuture = handler.call(rpcRequest);
+        RpcResponse response = null;
+        try {
+            response = rpcFuture.get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        return response.getValue();
+    }
 }

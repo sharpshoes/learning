@@ -1,7 +1,9 @@
 package org.casper.learning.io.nettyrpc.client;
 
+import lombok.Setter;
 import org.casper.learning.io.nettyrpc.protocol.RpcRequest;
 import org.casper.learning.io.nettyrpc.protocol.RpcResponse;
+import org.omg.CORBA.TIMEOUT;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -9,9 +11,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
-public class RpcFuture implements Future<Object> {
+/**
+ * @Author Casper Yang
+ */
+public class RpcFuture implements Future<RpcResponse> {
 
-    volatile int state = -1;
+    volatile int state = 0;
+    private final int done = 1;
 
     private RpcRequest request;
     private RpcResponse response;
@@ -30,33 +36,43 @@ public class RpcFuture implements Future<Object> {
 
     @Override
     public boolean isCancelled() {
-
         throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean isDone() {
-        return sync.isDone();
+        return state == done;
     }
 
     @Override
-    public Object get() throws InterruptedException, ExecutionException {
-        sync.acquire();
-        return this.response.getValue();
+    public RpcResponse get() throws InterruptedException, ExecutionException {
+
+        if (!isDone()) {
+            sync.acquire();
+        }
+        return this.response;
     }
 
     @Override
-    public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        return null;
+    public RpcResponse get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+
+        if (!isDone()) {
+            sync.acquire(timeout, unit);
+        }
+        if (!isDone()) {
+            throw new TimeoutException();
+        }
+        return this.response;
     }
 
-    public void done(RpcResponse response) {
+    public void finish(RpcResponse response) {
         this.response = response;
+        this.state = done;
         sync.release();
     }
 
     /**
-     * 自定义同步器，不支持重入
+     * 自定义同步器
      */
     static class Sync extends AbstractQueuedSynchronizer {
 
@@ -69,18 +85,28 @@ public class RpcFuture implements Future<Object> {
             this.setState(waiting);
         }
 
+        public void acquire(long timeout, TimeUnit unit) throws InterruptedException {
+            super.tryAcquireNanos(done, unit.toNanos(timeout));
+        }
+
         public void acquire() {
             super.acquire(done);
         }
-
         public void release() {
             super.release(done);
         }
 
+        @Override
         protected boolean tryAcquire(int acquires) {
-            return getState() == done;
+            if(getState() == done) {
+                if (compareAndSetState(done, waiting)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
+        @Override
         protected boolean tryRelease(int release) {
             if (getState() == waiting) {
                 if (compareAndSetState(waiting, done)) {
@@ -89,27 +115,17 @@ public class RpcFuture implements Future<Object> {
             }
             return false;
         }
-
-        public boolean isDone() {
-            getState();
-            return getState() == done;
-        }
     }
 
-    public static void main(String[] args) {
-
-        RpcFuture rpcFuture = new RpcFuture(new RpcRequest());
-
+    public static void main(String[] args) throws InterruptedException {
+        Future<RpcResponse> future = new RpcFuture(new RpcRequest());
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Object obj = rpcFuture.get();
-                    System.out.println("after done");
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
+                    future.get(1000, TimeUnit.MILLISECONDS);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
                 }
             }
         }).start();
@@ -117,30 +133,9 @@ public class RpcFuture implements Future<Object> {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    Object obj = rpcFuture.get();
-                    System.out.println("after done 1");
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
+                ((RpcFuture) future).finish(new RpcResponse());
             }
         }).start();
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println("done");
-        rpcFuture.done(new RpcResponse());
-        rpcFuture.done(new RpcResponse());
-
-//        SyncTask syncTask = new SyncTask();
-//        new Thread(syncTask).start();
-//        new Thread(syncTask).start();
-//        new Thread(syncTask).start();
     }
 
     static class SyncTask implements Runnable {
@@ -149,11 +144,9 @@ public class RpcFuture implements Future<Object> {
         public void run() {
             sync.acquire();
             System.out.println(Thread.currentThread().getName() + " ");
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        }
+
+        public void done() {
             sync.release();
         }
     }

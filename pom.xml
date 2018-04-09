@@ -55,22 +55,17 @@
             <version>3.1.0</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/io.vertx/vertx-web -->
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
+            <version>3.1.0</version>
         </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-web-templ-freemarker</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>com.github.rjeschke</groupId>
             <artifactId>txtmark</artifactId>
             <version>0.13</version>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-jdbc-client</artifactId>
         </dependency>
         <dependency>
             <groupId>org.hsqldb</groupId>

@@ -29,7 +29,7 @@ public class EchoClient {
             b.group(group)
              .channel(NioSocketChannel.class)
              .remoteAddress(new InetSocketAddress(host, port))
-             .handler(new ChannelInitializer<SocketChannel>() {    //5
+             .handler(new ChannelInitializer<SocketChannel>() {
                  @Override
                  public void initChannel(SocketChannel ch) 
                      throws Exception {

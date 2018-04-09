@@ -6,7 +6,7 @@ import lombok.Data;
 public class RpcRequest {
 
     private String requestId;
-    private String clazz;
+    private Class<?> clazz;
     private String method;
     private Class<?>[] paramTypes;
     private Object[] params;
