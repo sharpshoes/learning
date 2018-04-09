@@ -70,6 +70,7 @@ public class RpcClient {
             public void operationComplete(ChannelFuture channelFuture) throws Exception {
                 if (channelFuture.isSuccess()) {
                     RpcClientHandler handler = channelFuture.channel().pipeline().get(RpcClientHandler.class);
+
                 }
             }
         });
