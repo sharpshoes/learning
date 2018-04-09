@@ -7,8 +7,11 @@ import com.dyuproject.protostuff.runtime.RuntimeSchema;
 import org.casper.learning.io.nettyrpc.demo.UserInfo;
 import org.omg.CORBA.SystemException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class SerializationUtil {
 
@@ -61,18 +64,67 @@ public class SerializationUtil {
 
     public static void main(String args[]) {
 
-        UserInfo userInfo = new UserInfo();
-        userInfo.setId(1029);
-        userInfo.setAge("21");
-        userInfo.setName("Casper Yang");
-        userInfo.setTitle("Software Developer");
+//        UserInfo userInfo = new UserInfo();
+//        userInfo.setId(1029);
+//        userInfo.setAge("21");
+//        userInfo.setName("Casper Yang");
+//        userInfo.setTitle("Software Developer");
+//
+//        UserInfo.Salary income = new UserInfo.Salary();
+//        income.setIncome(12000);
+//        income.setTax(1800);
+//        income.setTaxRate(15);
+//        userInfo.setIncome(income);
+//
+//        byte[] bytes = SerializationUtil.serialize(userInfo);
+//
+//        userInfo = SerializationUtil.deserialize(bytes, UserInfo.class);
+//        System.out.println(userInfo.getAge());
+//        System.out.println(userInfo.getIncome());
 
-        byte[] bytes = SerializationUtil.serialize(userInfo);
-        System.out.println(bytes.length);
-        System.out.println(bytes[4]);
+        ReentrantLock lock = new ReentrantLock();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                lock.lock();
+                System.out.println("in thread 1");
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                lock.unlock();
+            }
+        }).start();
 
-        userInfo = SerializationUtil.deserialize(bytes, UserInfo.class);
-        System.out.println(userInfo.getAge());
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                lock.lock();
+
+                System.out.println("in thread 2");
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                lock.unlock();
+            }
+        }).start();
+
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                lock.lock();
+//                System.out.println("in thread 3");
+//                try {
+//                    Thread.sleep(1000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//               // lock.unlock();
+//            }
+//        }).start();
 
     }
 }

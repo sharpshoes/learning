@@ -8,6 +8,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import org.casper.learning.io.nettyrpc.protocol.RpcDecoder;
 import org.casper.learning.io.nettyrpc.protocol.RpcEncoder;
 import org.casper.learning.io.nettyrpc.protocol.RpcRequest;
@@ -19,6 +21,7 @@ public class RpcClient {
 
     EventLoopGroup group = new NioEventLoopGroup();
     Bootstrap bootstrap = new Bootstrap();
+    RpcClientHandler handler = new RpcClientHandler();
 
     public RpcClient(String host, int port) {
 
@@ -41,10 +44,25 @@ public class RpcClient {
             });
     }
 
-    public Channel connect() throws InterruptedException {
+    public void connect() throws InterruptedException {
 
-        ChannelFuture f = bootstrap.connect().sync();
-        return f.channel();
+        ChannelFuture f = bootstrap.connect();
+        f.addListener(new GenericFutureListener<ChannelFuture>() {
+            @Override
+            public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                if (channelFuture.isSuccess()) {
+                    RpcClientHandler handler = channelFuture.channel().pipeline().get(RpcClientHandler.class);
+                }
+            }
+        });
+    }
+
+    private void addHandler(RpcClientHandler handler) {
+
+//        connectedHandlers.add(handler);
+//        InetSocketAddress remoteAddress = (InetSocketAddress) handler.getChannel().remoteAddress();
+//        connectedServerNodes.put(remoteAddress, handler);
+//        signalAvailableHandler();
     }
 
     public void shutdown() throws InterruptedException {
