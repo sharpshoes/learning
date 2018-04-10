@@ -64,24 +64,6 @@ public class SerializationUtil {
 
     public static void main(String args[]) {
 
-//        UserInfo userInfo = new UserInfo();
-//        userInfo.setId(1029);
-//        userInfo.setAge("21");
-//        userInfo.setName("Casper Yang");
-//        userInfo.setTitle("Software Developer");
-//
-//        UserInfo.Salary income = new UserInfo.Salary();
-//        income.setIncome(12000);
-//        income.setTax(1800);
-//        income.setTaxRate(15);
-//        userInfo.setIncome(income);
-//
-//        byte[] bytes = SerializationUtil.serialize(userInfo);
-//
-//        userInfo = SerializationUtil.deserialize(bytes, UserInfo.class);
-//        System.out.println(userInfo.getAge());
-//        System.out.println(userInfo.getIncome());
-
         ReentrantLock lock = new ReentrantLock();
         new Thread(new Runnable() {
             @Override

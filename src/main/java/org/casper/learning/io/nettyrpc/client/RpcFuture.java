@@ -1,15 +1,20 @@
 package org.casper.learning.io.nettyrpc.client;
 
+import jdk.nashorn.internal.codegen.CompilerConstants;
 import lombok.Setter;
 import org.casper.learning.io.nettyrpc.protocol.RpcRequest;
 import org.casper.learning.io.nettyrpc.protocol.RpcResponse;
 import org.omg.CORBA.TIMEOUT;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import javax.security.auth.callback.Callback;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @Author Casper Yang
@@ -22,6 +27,9 @@ public class RpcFuture implements Future<RpcResponse> {
     private RpcRequest request;
     private RpcResponse response;
     private Sync sync;
+
+    private Set<Callback> callbackList = new HashSet<>();
+    Lock lock = new ReentrantLock();
 
     public RpcFuture(RpcRequest request) {
         this.request = request;
@@ -69,8 +77,35 @@ public class RpcFuture implements Future<RpcResponse> {
         this.response = response;
         this.state = done;
         sync.release();
+        if (!this.callbackList.isEmpty()) {
+            try {
+                lock.lock();
+                this.callbackList.stream().forEach(callback -> callback.success(this.request, response));
+            } finally {
+                lock.unlock();
+            }
+        }
+
     }
 
+    public void addCallback(Callback callback) {
+        try {
+            lock.lock();
+            this.callbackList.add(callback);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void removeCallback(Callback callback) {
+        try {
+            lock.lock();
+            this.callbackList.remove(callback);
+        } finally {
+            lock.unlock();
+        }
+
+    }
     /**
      * 自定义同步器
      */
@@ -138,17 +173,20 @@ public class RpcFuture implements Future<RpcResponse> {
         }).start();
     }
 
-    static class SyncTask implements Runnable {
-        Sync sync = new Sync();
-        @Override
-        public void run() {
-            sync.acquire();
-            System.out.println(Thread.currentThread().getName() + " ");
-        }
+    public static class CallbackCall implements Callable<Void> {
 
-        public void done() {
-            sync.release();
+        @Override
+        public Void call() throws Exception {
+
+            return null;
         }
+    }
+    public static interface Callback {
+
+        public void success(RpcRequest request, RpcResponse response);
+
+        public void error(RpcRequest request, Exception exception);
+
     }
 
 }
