@@ -76,13 +76,7 @@ public class RpcSerivceEndpoint {
     }
 
     public Object call(Class<?> clazz, String method, Class<?>[] paramTypes, Object[] params) {
-        RpcRequest rpcRequest = new RpcRequest();
-
-        rpcRequest.setClazz(clazz);
-        rpcRequest.setMethod(method);
-        rpcRequest.setParamTypes(paramTypes);
-        rpcRequest.setParams(params);
-        rpcRequest.setRequestId(UUID.randomUUID().toString());
+        RpcRequest rpcRequest = getRpcRequest(clazz, method, paramTypes, params);
 
         try {
             RpcResponse response = this.rpcChannelPool.call(rpcRequest);
@@ -94,5 +88,32 @@ public class RpcSerivceEndpoint {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private RpcRequest getRpcRequest(Class<?> clazz, String method, Class<?>[] paramTypes, Object[] params) {
+        RpcRequest rpcRequest = new RpcRequest();
+
+        rpcRequest.setClazz(clazz);
+        rpcRequest.setMethod(method);
+        rpcRequest.setParamTypes(paramTypes);
+        rpcRequest.setParams(params);
+        rpcRequest.setRequestId(UUID.randomUUID().toString());
+        return rpcRequest;
+    }
+
+    public void call(Class<?> clazz, String method, Class<?>[] paramTypes, Object[] params, ServiceCallback serviceCallback) {
+        RpcRequest rpcRequest = getRpcRequest(clazz, method, paramTypes, params);
+
+        this.rpcChannelPool.call(rpcRequest, new RpcCallback() {
+            @Override
+            public void success(RpcRequest request, RpcResponse response) {
+
+            }
+
+            @Override
+            public void error(RpcRequest request, Exception exception) {
+
+            }
+        });
     }
 }
