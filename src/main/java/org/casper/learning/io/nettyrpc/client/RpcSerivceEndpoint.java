@@ -26,7 +26,6 @@ public class RpcSerivceEndpoint {
 
     RpcChannelPool rpcChannelPool = new RpcChannelPool();
 
-    private int timeout = -1;
     private int count = 3;
     private String host;
     private int port;
@@ -54,8 +53,9 @@ public class RpcSerivceEndpoint {
                         .addLast(new RpcChannelHandler());
                 }
             });
-
-        this.connect();
+        for (int i = 0; i < count; i++) {
+            this.connect();
+        }
     }
 
     public void connect() throws InterruptedException {
