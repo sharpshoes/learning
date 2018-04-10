@@ -18,8 +18,7 @@ public class RpcChannelPool {
     private List<RpcChannelHandler> unregisterList = new ArrayList<>();
 
     private Lock lock = new ReentrantLock();
-
-    AtomicInteger size = new AtomicInteger(0);
+    private volatile int size = 0;
     RpcSyncUtil sync = new RpcSyncUtil();
 
     private int timeout = 60 * 1000;
@@ -27,7 +26,7 @@ public class RpcChannelPool {
     public void register(RpcChannelHandler channelHandler) {
         try {
             lock.lock();
-            size.getAndIncrement();
+            size += 1;
             this.channelHandlerList.add(channelHandler);
         } finally {
             sync.release();
@@ -38,7 +37,7 @@ public class RpcChannelPool {
     public void unregister(RpcChannelHandler channelHandler) {
         try {
             lock.lock();
-            size.getAndDecrement();
+            size -= 1;
             if (channelHandlerList.contains(channelHandler)) {
                 channelHandlerList.remove(channelHandler);
             } else {
@@ -50,7 +49,7 @@ public class RpcChannelPool {
     }
 
     private RpcChannelHandler get() {
-        if (size.get() == 0) {
+        if (size == 0) {
             return null;
         }
 
@@ -122,4 +121,11 @@ public class RpcChannelPool {
         throw new UnsupportedOperationException();
     }
 
+    public static void main(String args[]) {
+        AtomicInteger size = new AtomicInteger(0);
+        System.out.println(size.incrementAndGet());
+        System.out.println(size.get());
+        System.out.println(size.getAndIncrement());
+        System.out.println(size.get());
+    }
 }
