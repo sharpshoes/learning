@@ -1,14 +1,12 @@
 package org.casper.learning.io.nettyrpc.client;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import org.casper.learning.io.nettyrpc.protocol.RpcDecoder;
 import org.casper.learning.io.nettyrpc.protocol.RpcEncoder;
@@ -21,22 +19,19 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-public class RpcClient {
+public class RpcSerivceEndpoint {
 
     private EventLoopGroup group = new NioEventLoopGroup();
     private Bootstrap bootstrap = new Bootstrap();
 
-    private List<RpcClientHandler> handlerList = new ArrayList<>();
-    RpcClientHandler handler;
-
-    List<RpcClientHandler> handlerChache = new ArrayList<>();
+    RpcChannelPool rpcChannelPool = new RpcChannelPool();
 
     private int timeout = -1;
     private int count = 3;
     private String host;
     private int port;
 
-    public RpcClient(String host, int port) {
+    public RpcSerivceEndpoint(String host, int port) {
         try {
             this.init(host, port);
         } catch (InterruptedException iEx) {
@@ -56,7 +51,7 @@ public class RpcClient {
                     ch.pipeline()
                         .addLast(new RpcEncoder(RpcRequest.class))
                         .addLast(new RpcDecoder(RpcResponse.class))
-                        .addLast(new RpcClientHandler());
+                        .addLast(new RpcChannelHandler());
                 }
             });
 
@@ -69,8 +64,8 @@ public class RpcClient {
             @Override
             public void operationComplete(ChannelFuture channelFuture) throws Exception {
                 if (channelFuture.isSuccess()) {
-                    RpcClientHandler handler = channelFuture.channel().pipeline().get(RpcClientHandler.class);
-
+                    RpcChannelHandler handler = channelFuture.channel().pipeline().get(RpcChannelHandler.class);
+                    rpcChannelPool.register(handler);
                 }
             }
         });
@@ -89,16 +84,15 @@ public class RpcClient {
         rpcRequest.setParams(params);
         rpcRequest.setRequestId(UUID.randomUUID().toString());
 
-        RpcFuture rpcFuture = handler.call(rpcRequest);
-        RpcResponse response = null;
         try {
-            response = rpcFuture.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            RpcResponse response = this.rpcChannelPool.call(rpcRequest);
+            return response.getValue();
         } catch (ExecutionException e) {
             e.printStackTrace();
+            return null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return null;
         }
-
-        return response.getValue();
     }
 }

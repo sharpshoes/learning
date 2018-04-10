@@ -12,9 +12,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Handler;
 
-public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
+public class RpcChannelHandler extends SimpleChannelInboundHandler<RpcResponse> {
 
     private Channel channel = null;
 
@@ -52,6 +51,18 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
         }
     }
 
+    public RpcFuture call(RpcRequest request, RpcCallback callback) {
+
+        RpcFuture rpcFuture = new RpcFuture(request);
+
+        rpcFuture.addCallback(callback);
+        this.channel.writeAndFlush(request);
+        String requestId = request.getRequestId();
+
+        this.rpcFutureMap.put(requestId, rpcFuture);
+        return rpcFuture;
+    }
+
     public RpcFuture call(RpcRequest request) {
 
         RpcFuture rpcFuture = new RpcFuture(request);
@@ -84,7 +95,7 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
 
     public static interface HandlerCallback {
 
-        public void closed(RpcClientHandler handler);
+        public void closed(RpcChannelHandler handler);
 
     }
 }

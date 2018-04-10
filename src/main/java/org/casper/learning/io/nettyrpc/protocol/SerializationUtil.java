@@ -63,36 +63,35 @@ public class SerializationUtil {
     }
 
     public static void main(String args[]) {
-
-        ReentrantLock lock = new ReentrantLock();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                lock.lock();
-                System.out.println("in thread 1");
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                lock.unlock();
-            }
-        }).start();
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                lock.lock();
-
-                System.out.println("in thread 2");
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                lock.unlock();
-            }
-        }).start();
+//        ReentrantLock lock = new ReentrantLock();
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                lock.lock();
+//                System.out.println("in thread 1");
+//                try {
+//                    Thread.sleep(10000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                lock.unlock();
+//            }
+//        }).start();
+//
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                lock.lock();
+//
+//                System.out.println("in thread 2");
+//                try {
+//                    Thread.sleep(10000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                lock.unlock();
+//            }
+//        }).start();
 
 //        new Thread(new Runnable() {
 //            @Override
