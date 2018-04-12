@@ -14,7 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class RpcFuture implements Future<RpcResponse> {
 
-    volatile int state = 0;
+    private volatile int state = 0;
     private final int done = 1;
 
     private RpcRequest request;
