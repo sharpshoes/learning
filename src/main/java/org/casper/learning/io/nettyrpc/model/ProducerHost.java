@@ -1,15 +1,18 @@
 package org.casper.learning.io.nettyrpc.model;
 
+import lombok.Data;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * 服务提供方host信息
  */
-public class ProviderHostConfig {
+@Data
+public class ProducerHost {
 
+    private String namespace;
     private String host;
     private int port;
-    private List<NamespaceConfig> namespaceConfigs = new ArrayList<>();
 
 }

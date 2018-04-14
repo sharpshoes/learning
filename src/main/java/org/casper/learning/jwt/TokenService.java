@@ -74,6 +74,11 @@ public class TokenService {
     public static void main(String args[]) throws UnsupportedEncodingException {
         AccessInfo accessInfo = new AccessInfo();
         accessInfo.setUid(123);
-        String token = TokenService.INSTANCE.generate(accessInfo);
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < 1000000; i++) {
+            String token = TokenService.INSTANCE.generate(accessInfo);
+        }
+        System.out.println("totally cost " + (System.currentTimeMillis() - start));
+
     }
 }
