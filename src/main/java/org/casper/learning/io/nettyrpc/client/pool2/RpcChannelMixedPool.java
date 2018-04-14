@@ -58,7 +58,7 @@ public class RpcChannelMixedPool {
         return null;
     }
 
-    public void putBack(RpcCallChannel rpcCallChannel) {
+    public void putBack(String namespace, RpcCallChannel rpcCallChannel) {
 
     }
 }

@@ -13,6 +13,7 @@ import java.util.Deque;
 /**
  * @author Casper
  */
+@Deprecated
 public class PooledChannel extends DefaultPooledObject<RpcChannelHandler> {
     public PooledChannel(RpcChannelHandler channel) {
         super(channel);

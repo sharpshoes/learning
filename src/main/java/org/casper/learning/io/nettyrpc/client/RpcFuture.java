@@ -101,27 +101,6 @@ public class RpcFuture implements Future<RpcResponse> {
     }
 
 
-    public static void main(String[] args) throws InterruptedException {
-        Future<RpcResponse> future = new RpcFuture(new RpcRequest());
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    future.get(1000, TimeUnit.MILLISECONDS);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }).start();
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                ((RpcFuture) future).finish(new RpcResponse());
-            }
-        }).start();
-    }
-
     public static class CallbackCall implements Callable<Void> {
 
         @Override

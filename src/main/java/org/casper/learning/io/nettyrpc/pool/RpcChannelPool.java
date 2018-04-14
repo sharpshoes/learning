@@ -1,5 +1,9 @@
-package org.casper.learning.io.nettyrpc.client;
+package org.casper.learning.io.nettyrpc.pool;
 
+import org.casper.learning.io.nettyrpc.client.RpcCallback;
+import org.casper.learning.io.nettyrpc.client.RpcChannelHandler;
+import org.casper.learning.io.nettyrpc.client.RpcFuture;
+import org.casper.learning.io.nettyrpc.client.RpcSyncUtil;
 import org.casper.learning.io.nettyrpc.protocol.RpcRequest;
 import org.casper.learning.io.nettyrpc.protocol.RpcResponse;
 
@@ -12,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+@Deprecated
 public class RpcChannelPool {
 
     private List<RpcChannelHandler> channelHandlerList = new ArrayList<>();

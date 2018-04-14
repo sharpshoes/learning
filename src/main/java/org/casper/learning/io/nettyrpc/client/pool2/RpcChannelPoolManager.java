@@ -1,5 +1,7 @@
 package org.casper.learning.io.nettyrpc.client.pool2;
 
+import org.casper.learning.io.nettyrpc.client.RpcCallChannel;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -32,12 +34,12 @@ public class RpcChannelPoolManager {
         }
     }
 
-    public PooledRpcChannel borrow() {
-
+    public RpcCallChannel borrow() {
+        
         return null;
     }
 
-    public void giveBack(PooledRpcChannel rpcCallChannel) {
+    public void giveBack(PooledRpcChannel RpcCallChannel) {
 
     }
 

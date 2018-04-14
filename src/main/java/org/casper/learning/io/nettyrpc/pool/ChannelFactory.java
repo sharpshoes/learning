@@ -8,6 +8,7 @@ import org.casper.learning.io.nettyrpc.client.RpcChannelHandler;
 /**
  * @author Casper
  */
+@Deprecated
 public class ChannelFactory implements KeyedPooledObjectFactory<String, RpcChannelHandler> {
 
 

@@ -112,6 +112,7 @@ public class RpcChannelHandler extends SimpleChannelInboundHandler<RpcResponse> 
     public boolean checkValid() {
         return this.channel.isOpen();
     }
+
     @Override
     public void close() {
 

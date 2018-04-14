@@ -5,6 +5,7 @@ import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.casper.learning.io.nettyrpc.client.RpcChannelHandler;
 
+@Deprecated
 public class ChannelPool extends GenericKeyedObjectPool<String, RpcChannelHandler> {
 
     public ChannelPool(ChannelFactory factory) {
