@@ -39,6 +39,13 @@ public class RpcServiceFactory {
 
         RpcServiceFactory serviceHolder = new RpcServiceFactory();
         IUserService userService = serviceHolder.lookup(IUserService.class);
+        userService.listUser((userInfoList, exception)  -> {
+            if (exception == null) {
+
+            } else {
+
+            }
+        });
 
     }
 }

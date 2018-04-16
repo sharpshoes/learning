@@ -3,6 +3,7 @@ package org.casper.learning.io.nettyrpc.client;
 import lombok.Setter;
 import org.casper.learning.io.nettyrpc.client.annotation.RpcApi;
 import org.casper.learning.io.nettyrpc.client.call.RpcChannel;
+import org.casper.learning.io.nettyrpc.client.call.RpcFuture;
 import org.casper.learning.io.nettyrpc.client.pool2.RpcChannelMixedPool;
 import org.casper.learning.io.nettyrpc.client.pool2.RpcChannelPoolManager;
 import org.casper.learning.io.nettyrpc.protocol.RpcRequest;
@@ -18,6 +19,7 @@ public class RpcServiceHandler implements InvocationHandler {
     @Setter
     private Class<?> apiClass;
     CallbackFactory callbackFactory = new CallbackFactory();
+    private RpcChannelMixedPool channelMixedPool = null;
 
     public RpcServiceHandler(String namespace) {
         this.namespace = namespace;
@@ -56,6 +58,14 @@ public class RpcServiceHandler implements InvocationHandler {
 
             request.setParamTypes(typeStrings);
             request.setParams(args);
+            RpcChannel rpcChannel = null;
+            try {
+                rpcChannel = RpcChannelMixedPool.INSTANCE.poolManager(namespace).borrow();
+                RpcFuture future = rpcChannel.call(request);
+                return future.get();
+            } finally {
+                RpcChannelMixedPool.INSTANCE.poolManager(namespace).giveBack(rpcChannel);
+            }
 
         } finally {
             if (channel != null) {
@@ -63,7 +73,7 @@ public class RpcServiceHandler implements InvocationHandler {
             }
         }
 
-        return null;
+//        return null;
     }
 
     public static void main(String args[]) {
