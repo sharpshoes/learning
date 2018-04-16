@@ -1,13 +1,26 @@
-package org.casper.learning.io.nettyrpc.client.pool2;
+package org.casper.learning.io.nettyrpc.model;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 服务提供方host信息
+ */
 public class RpcEndpoint {
 
+    @Getter
     private String namespace;
+    @Getter
     private String host;
+    @Getter
     private int port;
+    @Getter
+    @Setter
+    private int weight;
 
     private RpcEndpoint(String namespace, String host, int port) {
         this.namespace = namespace;
@@ -19,6 +32,7 @@ public class RpcEndpoint {
         return new RpcEndpoint(namespace, host, port);
     }
 
+    @Override
     public boolean equals(Object target) {
 
         if (target == null) {
@@ -32,5 +46,12 @@ public class RpcEndpoint {
                 && this.getHost().equals(((RpcEndpoint) target).getHost())
                 && this.getPort() == ((RpcEndpoint) target).getPort();
 
+    }
+
+    @Override
+    public int hashCode() {
+        return (this.getNamespace().hashCode() * 31
+                + this.host.hashCode()) * 31
+                + this.getPort();
     }
 }

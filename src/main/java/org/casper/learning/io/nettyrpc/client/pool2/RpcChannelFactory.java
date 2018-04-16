@@ -25,10 +25,7 @@ public class RpcChannelFactory implements PooledObjectFactory<PooledRpcChannel> 
         PooledRpcChannel pooledRpcChannel = new PooledRpcChannel(channelHandler);
 
         channelHandler.setPooledChannel(pooledRpcChannel);
-
-        pooledRpcChannel.setNamespace(endpointClient.getNamespace());
-        pooledRpcChannel.setHost(endpointClient.getHost());
-        pooledRpcChannel.setPort(endpointClient.getPort());
+        pooledRpcChannel.setEndpoint(this.endpointClient.endpoint());
 
         return new DefaultPooledObject(pooledRpcChannel);
     }
@@ -36,13 +33,13 @@ public class RpcChannelFactory implements PooledObjectFactory<PooledRpcChannel> 
     @Override
     public void destroyObject(PooledObject<PooledRpcChannel> pooledObject) throws Exception {
         RpcChannel channelHandler = pooledObject.getObject().getChannel();
-        channelHandler.close();
+        channelHandler.destroy();
     }
 
     @Override
     public boolean validateObject(PooledObject<PooledRpcChannel> pooledObject) {
         RpcChannel channelHandler = pooledObject.getObject().getChannel();
-        return channelHandler.checkValid();
+        return channelHandler.isClosed();
     }
 
     @Override

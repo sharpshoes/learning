@@ -7,7 +7,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Getter;
-import org.casper.learning.io.nettyrpc.model.ServiceProvider;
+import lombok.Setter;
+import org.casper.learning.io.nettyrpc.model.RpcEndpoint;
 import org.casper.learning.io.nettyrpc.protocol.RpcDecoder;
 import org.casper.learning.io.nettyrpc.protocol.RpcEncoder;
 import org.casper.learning.io.nettyrpc.protocol.RpcRequest;
@@ -23,21 +24,14 @@ public class RpcEndpointClient {
     private EventLoopGroup group = new NioEventLoopGroup();
     private Bootstrap bootstrap = new Bootstrap();
 
-    @Getter
-    private String namespace;
-    @Getter
-    private String host;
-    @Getter
-    private int port;
+    private RpcEndpoint endpoint;
 
-    public RpcEndpointClient(ServiceProvider producerHost) {
-        this.namespace = producerHost.getNamespace();
-        this.host = producerHost.getHost();
-        this.port = producerHost.getPort();
+    public RpcEndpointClient(RpcEndpoint rpcEndpoint) {
+        this.endpoint = rpcEndpoint;
     }
 
     public void start() throws InterruptedException {
-        this.init(this.host, this.port);
+        this.init(endpoint.getHost(), this.endpoint.getPort());
     }
 
     private void init(String host, int port) throws InterruptedException {
@@ -51,7 +45,7 @@ public class RpcEndpointClient {
                     ch.pipeline()
                         .addLast(new RpcEncoder(RpcRequest.class))
                         .addLast(new RpcDecoder(RpcResponse.class))
-                        .addLast(new RpcChannelHandler(namespace, host));
+                        .addLast(new RpcChannelHandler());
                 }
             });
     }
@@ -60,6 +54,9 @@ public class RpcEndpointClient {
         return bootstrap.connect().sync().channel().pipeline().get(RpcChannelHandler.class);
     }
 
+    public RpcEndpoint endpoint() {
+        return this.endpoint;
+    }
 
     public void shutdown() throws InterruptedException {
         group.shutdownGracefully().sync();

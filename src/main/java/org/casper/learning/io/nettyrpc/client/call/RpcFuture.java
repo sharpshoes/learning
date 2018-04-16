@@ -82,6 +82,9 @@ public class RpcFuture implements Future<RpcResponse> {
                 executorPool.submit(callback);
             });
         }
+    }
+
+    public void error(Exception ex) {
 
     }
 

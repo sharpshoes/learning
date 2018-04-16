@@ -27,11 +27,11 @@ public class RpcChannelHandler extends SimpleChannelInboundHandler<RpcResponse> 
     private PooledRpcChannel pooledChannel;
 
     private Map<String, RpcFuture> rpcFutureMap = new ConcurrentHashMap<>();
-    private Set<HandlerListener> handlerListeners = new HashSet<>();
+    private Set<RpcChannelListener> rpcChannelListeners = new HashSet<>();
 
     Lock lock = new ReentrantLock();
 
-    public RpcChannelHandler(String namespace, String host) {
+    public RpcChannelHandler() {
 
     }
 
@@ -54,10 +54,10 @@ public class RpcChannelHandler extends SimpleChannelInboundHandler<RpcResponse> 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         ctx.close();
-        if (!this.handlerListeners.isEmpty()) {
+        if (!this.rpcChannelListeners.isEmpty()) {
             try {
                 lock.lock();
-                this.handlerListeners.stream().forEach(callback -> callback.onColse(this));
+                this.rpcChannelListeners.stream().forEach(callback -> callback.onDestroy(this));
             } finally {
                 lock.unlock();
             }
@@ -88,20 +88,20 @@ public class RpcChannelHandler extends SimpleChannelInboundHandler<RpcResponse> 
         return rpcFuture;
     }
 
-    public void registerHandlerListener(HandlerListener callback) {
+    public void registerHandlerListener(RpcChannelListener callback) {
         try {
             lock.lock();
-            this.handlerListeners.add(callback);
+            this.rpcChannelListeners.add(callback);
         } finally {
             lock.unlock();
         }
     }
 
-    public void unregisterHandlerListener(HandlerListener callback) {
-        if (this.handlerListeners.contains(callback)) {
+    public void unregisterHandlerListener(RpcChannelListener callback) {
+        if (this.rpcChannelListeners.contains(callback)) {
             try {
                 lock.lock();
-                this.handlerListeners.remove(callback);
+                this.rpcChannelListeners.remove(callback);
             } finally {
                 lock.unlock();
             }
@@ -109,13 +109,25 @@ public class RpcChannelHandler extends SimpleChannelInboundHandler<RpcResponse> 
     }
 
     @Override
-    public boolean checkValid() {
-        return this.channel.isOpen();
+    public boolean isWritable() {
+        return this.channel.isActive() && this.channel.isWritable();
     }
 
     @Override
-    public void close() {
+    public boolean isClosed() {
+        return !channel.isActive();
+    }
 
+    @Override
+    public void destroy() {
+        for (RpcFuture future : this.rpcFutureMap.values()) {
+            future.error(new Exception());
+        }
+        this.rpcFutureMap = null;
+
+        for (RpcChannelListener listener : this.rpcChannelListeners) {
+            listener.onDestroy(this);
+        }
     }
 
     @Override
@@ -124,8 +136,8 @@ public class RpcChannelHandler extends SimpleChannelInboundHandler<RpcResponse> 
     }
 
 
-    public static interface HandlerListener {
-        public void onColse(RpcChannelHandler handler);
+    public static interface RpcChannelListener {
+        public void onDestroy(RpcChannel handler);
     }
 
 }

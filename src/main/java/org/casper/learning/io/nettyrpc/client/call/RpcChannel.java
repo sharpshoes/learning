@@ -11,8 +11,10 @@ public interface RpcChannel {
     public RpcFuture call(RpcRequest request);
     public RpcFuture call(RpcRequest request, RpcCallback callback);
 
-    public boolean checkValid();
-    public void close();
+    public boolean isWritable();
+    public boolean isClosed();
+
+    public void destroy();
 
     public PooledRpcChannel pooledChannel();
 }

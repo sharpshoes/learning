@@ -1,6 +1,7 @@
 package org.casper.learning.io.nettyrpc.client.pool2;
 
 import org.casper.learning.io.nettyrpc.client.call.RpcEndpointClient;
+import org.casper.learning.io.nettyrpc.model.RpcEndpoint;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,8 +28,8 @@ public class RpcChannelMixedPool {
             RpcChannelFactory factory = new RpcChannelFactory(endpointClient);
             RpcChannelSinglePool pool = new RpcChannelSinglePool(factory, new RpcChannelPoolConfig());
             lock.lock();
-            if (!mixedPool.containsKey(endpointClient.getNamespace())) {
-                mixedPool.put(endpointClient.getNamespace(), new RpcChannelPoolManager());
+            if (!mixedPool.containsKey(endpointClient.endpoint().getNamespace())) {
+                mixedPool.put(endpointClient.endpoint().getNamespace(), new RpcChannelPoolManager());
             }
             mixedPool.get(endpointClient).register(pool);
 

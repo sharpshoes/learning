@@ -3,6 +3,7 @@ package org.casper.learning.io.nettyrpc.client.pool2;
 import lombok.Getter;
 import lombok.Setter;
 import org.casper.learning.io.nettyrpc.client.call.RpcChannel;
+import org.casper.learning.io.nettyrpc.model.RpcEndpoint;
 
 import java.util.UUID;
 
@@ -15,15 +16,9 @@ public class PooledRpcChannel {
     @Getter
     private RpcChannel channel;
 
-    @Getter
     @Setter
-    private String namespace;
-    @Getter
-    @Setter
-    private String host;
-    @Getter
-    @Setter
-    private int port;
+    private RpcEndpoint endpoint;
+
     @Getter
     private final String identify;
 
@@ -34,7 +29,7 @@ public class PooledRpcChannel {
     }
 
     public RpcEndpoint endpoint() {
-        return RpcEndpoint.of(this.namespace, this.host, this.port);
+        return this.endpoint;
     }
 
 }

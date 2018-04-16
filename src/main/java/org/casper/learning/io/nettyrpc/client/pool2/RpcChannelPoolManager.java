@@ -2,6 +2,7 @@ package org.casper.learning.io.nettyrpc.client.pool2;
 
 import lombok.Getter;
 import org.casper.learning.io.nettyrpc.client.call.RpcChannel;
+import org.casper.learning.io.nettyrpc.model.RpcEndpoint;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,8 +23,6 @@ public class RpcChannelPoolManager {
 
     private BorrowStrategy borrowStrategy = null;
 
-    private Set<RpcChannel> usedRpcCallChannelCache = new HashSet<>();
-
     public void register(RpcChannelSinglePool pool) {
         try {
             lock.lock();
@@ -34,9 +33,9 @@ public class RpcChannelPoolManager {
         }
     }
 
-    public void unregister(RpcEndpoint rpcEndpointInfo) {
+    public void unregister(RpcEndpoint rpcEndpoint) {
         for (RpcChannelSinglePool pool : pools) {
-            if (pool.endpoint().equals(rpcEndpointInfo)) {
+            if (pool.endpoint().equals(rpcEndpoint)) {
                 this.unregister(pool);
                 return;
             }
@@ -68,31 +67,84 @@ public class RpcChannelPoolManager {
                 throw new RuntimeException();
             }
             RpcChannel channel = this.borrowStrategy.borrow();
-            this.usedRpcCallChannelCache.add(channel);
             return channel;
         } finally {
             lock.unlock();
         }
     }
 
-    public void giveBack(RpcChannel rpcCallChannel) {
-
-        PooledRpcChannel pooledRpcChannel = rpcCallChannel.pooledChannel();
-        for (RpcChannelSinglePool pool : pools) {
-            if (pooledRpcChannel.endpoint().equals(pool.endpoint())) {
-                pool.returnObject(pooledRpcChannel);
+    public RpcChannel borrowNext() {
+        try {
+            if (this.empty) {
+                throw new RuntimeException();
             }
+            lock.lock();
+            if (this.empty) {
+                throw new RuntimeException();
+            }
+            if (this.borrowStrategy == null) {
+                throw new RuntimeException();
+            }
+            RpcChannel channel = this.borrowStrategy.borrowNext();
+            return channel;
+        } finally {
+            lock.unlock();
         }
     }
 
+    public void giveBack(RpcChannel rpcChannel) {
+        this.borrowStrategy.giveBack(rpcChannel);
+    }
+
     public static interface BorrowStrategy {
+
         public RpcChannel borrow();
+        /**
+         * 从下一个服务列表中查找可用channel
+         * @return
+         */
+        public RpcChannel borrowNext();
+
+        public void giveBack(RpcChannel rpcChannel);
     }
 
     public static abstract class AbstractBorrowStrategy implements BorrowStrategy {
         protected List<RpcChannelSinglePool> pools;
+        protected ThreadLocal<RpcChannelSinglePool> threadCurrentPool = new ThreadLocal<>();
+        private ThreadLocal<Set<RpcChannelSinglePool>> threadUsedPools = new ThreadLocal<>();
+
         public AbstractBorrowStrategy(List<RpcChannelSinglePool> pools) {
             this.pools = pools;
+        }
+
+        @Override
+        public RpcChannel borrowNext() {
+            if (threadUsedPools.get() == null) {
+                Set<RpcChannelSinglePool> poolSet = new HashSet<>();
+                poolSet.add(threadCurrentPool.get());
+                threadUsedPools.set(poolSet);
+            }
+
+            if (threadUsedPools.get().size() == this.pools.size()) {
+                return null;
+            }
+
+            for (RpcChannelSinglePool pool : pools) {
+                if (!threadUsedPools.get().contains(pool)) {
+                    threadUsedPools.get().add(pool);
+                    try {
+                        return pool.borrowObject().getChannel();
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex.getMessage(), ex);
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public void giveBack(RpcChannel rpcChannel) {
+            threadCurrentPool.get().returnObject(rpcChannel.pooledChannel());
         }
     }
 
@@ -109,6 +161,8 @@ public class RpcChannelPoolManager {
 
             int offset = count.getAndIncrement() % this.pools.size();
             try {
+
+                threadCurrentPool.set(this.pools.get(offset));
                 return this.pools.get(offset).borrowObject().getChannel();
             } catch (Exception e) {
                 throw new RuntimeException(e.getMessage(), e);

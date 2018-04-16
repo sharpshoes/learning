@@ -57,21 +57,25 @@ public class RpcServiceHandler implements InvocationHandler {
             throw new UnsupportedOperationException();
         }
 
-        try {
-            channel = poolManager.borrow();
-            if (callback == null) {
-                RpcFuture future = channel.call(request);
-                return future.get();
-            } else {
-                channel.call(request, RpcCallbackFactory.create(callback));
-                return Void.TYPE;
-            }
-
-        } finally {
-            if (channel != null) {
-                poolManager.giveBack(channel);
-            }
+        channel = poolManager.borrow();
+        while (channel.isWritable() && channel != null) {
+            poolManager.giveBack(channel);
+            channel = poolManager.borrowNext();
         }
+
+        if (channel == null) {
+            throw new UnsupportedOperationException();
+        }
+        if (callback == null) {
+            RpcFuture future = channel.call(request);
+            poolManager.giveBack(channel);
+
+            return future.get();
+        } else {
+            channel.call(request, RpcCallbackFactory.create(callback));
+            return Void.TYPE;
+        }
+
     }
 
     private Callback processParams(RpcRequest request, Object[] args) {
