@@ -1,4 +1,4 @@
-package org.casper.learning.io.nettyrpc.client;
+package org.casper.learning.io.nettyrpc.client.call;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -67,7 +67,7 @@ public class RpcChannelHandler extends SimpleChannelInboundHandler<RpcResponse> 
     @Override
     public RpcFuture call(RpcRequest request, RpcCallback callback) {
 
-        RpcFuture rpcFuture = new RpcFuture(request);
+        RpcFuture rpcFuture = RpcFuture.create(request);
 
         rpcFuture.addCallback(callback);
         this.channel.writeAndFlush(request);
@@ -80,7 +80,7 @@ public class RpcChannelHandler extends SimpleChannelInboundHandler<RpcResponse> 
     @Override
     public RpcFuture call(RpcRequest request) {
 
-        RpcFuture rpcFuture = new RpcFuture(request);
+        RpcFuture rpcFuture = RpcFuture.create(request);
         this.channel.writeAndFlush(request);
         String requestId = request.getRequestId();
 

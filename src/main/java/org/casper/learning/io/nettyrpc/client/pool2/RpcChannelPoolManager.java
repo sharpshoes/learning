@@ -1,7 +1,7 @@
 package org.casper.learning.io.nettyrpc.client.pool2;
 
 import lombok.Getter;
-import org.casper.learning.io.nettyrpc.client.RpcChannel;
+import org.casper.learning.io.nettyrpc.client.call.RpcChannel;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,7 +27,7 @@ public class RpcChannelPoolManager {
     public void register(RpcChannelSinglePool pool) {
         try {
             lock.lock();
-            empty = true;
+            empty = false;
             pools.add(pool);
         } finally {
             lock.unlock();
@@ -43,7 +43,7 @@ public class RpcChannelPoolManager {
         }
     }
 
-    public void unregister(RpcChannelSinglePool pool) {
+    private void unregister(RpcChannelSinglePool pool) {
         try {
             lock.lock();
             pools.remove(pool);

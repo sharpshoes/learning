@@ -1,5 +1,7 @@
-package org.casper.learning.io.nettyrpc.client;
+package org.casper.learning.io.nettyrpc.client.call;
 
+import org.casper.learning.io.nettyrpc.client.RpcSyncUtil;
+import org.casper.learning.io.nettyrpc.client.call.RpcCallback;
 import org.casper.learning.io.nettyrpc.protocol.RpcRequest;
 import org.casper.learning.io.nettyrpc.protocol.RpcResponse;
 
@@ -20,12 +22,14 @@ public class RpcFuture implements Future<RpcResponse> {
     private RpcRequest request;
     private RpcResponse response;
     private RpcSyncUtil sync;
+    private ExecutorService executorPool;
 
     private Set<RpcCallback> callbackList = new HashSet<>();
     Lock lock = new ReentrantLock();
 
-    public RpcFuture(RpcRequest request) {
+    private RpcFuture(RpcRequest request, ExecutorService executorPool) {
         this.request = request;
+        this.executorPool = executorPool;
         this.sync = new RpcSyncUtil();
     }
 
@@ -71,12 +75,12 @@ public class RpcFuture implements Future<RpcResponse> {
         this.state = done;
         sync.release();
         if (!this.callbackList.isEmpty()) {
-            try {
-                lock.lock();
-                this.callbackList.stream().forEach(callback -> callback.success(this.request, response));
-            } finally {
-                lock.unlock();
-            }
+
+            this.callbackList.stream().forEach(callback -> {
+                callback.setRequest(request);
+                callback.setResponse(response);
+                executorPool.submit(callback);
+            });
         }
 
     }
@@ -110,5 +114,17 @@ public class RpcFuture implements Future<RpcResponse> {
         }
     }
 
+    public static RpcFuture create(RpcRequest request) {
+        return RpcFutureFactory.create(request);
+    }
+
+    private static class RpcFutureFactory {
+
+        private static ExecutorService executorPool = new ThreadPoolExecutor(2, 4, 1000, TimeUnit.HOURS, new LinkedBlockingQueue<>());
+
+        public static RpcFuture create(RpcRequest request) {
+            return new RpcFuture(request, executorPool);
+        }
+    }
 
 }

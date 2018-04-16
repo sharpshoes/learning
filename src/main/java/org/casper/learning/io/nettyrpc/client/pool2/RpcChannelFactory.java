@@ -3,9 +3,9 @@ package org.casper.learning.io.nettyrpc.client.pool2;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
-import org.casper.learning.io.nettyrpc.client.RpcChannel;
-import org.casper.learning.io.nettyrpc.client.RpcChannelHandler;
-import org.casper.learning.io.nettyrpc.client.RpcEndpointClient;
+import org.casper.learning.io.nettyrpc.client.call.RpcChannel;
+import org.casper.learning.io.nettyrpc.client.call.RpcChannelHandler;
+import org.casper.learning.io.nettyrpc.client.call.RpcEndpointClient;
 
 /**
  * @author Casper

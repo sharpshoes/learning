@@ -1,6 +1,6 @@
 package org.casper.learning.io.nettyrpc.client.pool2;
 
-import org.casper.learning.io.nettyrpc.client.RpcEndpointClient;
+import org.casper.learning.io.nettyrpc.client.call.RpcEndpointClient;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

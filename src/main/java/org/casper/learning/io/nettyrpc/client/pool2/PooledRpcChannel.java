@@ -2,7 +2,7 @@ package org.casper.learning.io.nettyrpc.client.pool2;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.casper.learning.io.nettyrpc.client.RpcChannel;
+import org.casper.learning.io.nettyrpc.client.call.RpcChannel;
 
 import java.util.UUID;
 

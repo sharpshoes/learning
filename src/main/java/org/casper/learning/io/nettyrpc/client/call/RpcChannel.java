@@ -1,4 +1,4 @@
-package org.casper.learning.io.nettyrpc.client;
+package org.casper.learning.io.nettyrpc.client.call;
 
 import org.casper.learning.io.nettyrpc.client.pool2.PooledRpcChannel;
 import org.casper.learning.io.nettyrpc.protocol.RpcRequest;

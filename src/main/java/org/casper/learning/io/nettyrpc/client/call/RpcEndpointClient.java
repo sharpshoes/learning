@@ -1,4 +1,4 @@
-package org.casper.learning.io.nettyrpc.client;
+package org.casper.learning.io.nettyrpc.client.call;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
@@ -7,13 +7,12 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Getter;
-import lombok.Setter;
+import org.casper.learning.io.nettyrpc.client.call.RpcChannelHandler;
 import org.casper.learning.io.nettyrpc.model.ProducerHost;
 import org.casper.learning.io.nettyrpc.protocol.RpcDecoder;
 import org.casper.learning.io.nettyrpc.protocol.RpcEncoder;
 import org.casper.learning.io.nettyrpc.protocol.RpcRequest;
 import org.casper.learning.io.nettyrpc.protocol.RpcResponse;
-import org.casper.learning.thread.Producer;
 
 import java.net.InetSocketAddress;
 
