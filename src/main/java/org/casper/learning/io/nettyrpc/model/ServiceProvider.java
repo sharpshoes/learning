@@ -9,7 +9,7 @@ import java.util.List;
  * 服务提供方host信息
  */
 @Data
-public class ProducerHost {
+public class ServiceProvider {
 
     private String namespace;
     private String host;

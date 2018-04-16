@@ -2,6 +2,7 @@ package org.casper.learning.io.nettyrpc.client;
 
 import lombok.Setter;
 import org.casper.learning.io.nettyrpc.client.annotation.RpcApi;
+import org.casper.learning.io.nettyrpc.client.call.RpcCallbackFactory;
 import org.casper.learning.io.nettyrpc.client.call.RpcChannel;
 import org.casper.learning.io.nettyrpc.client.call.RpcFuture;
 import org.casper.learning.io.nettyrpc.client.pool2.RpcChannelMixedPool;
@@ -10,7 +11,6 @@ import org.casper.learning.io.nettyrpc.protocol.RpcRequest;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.nio.channels.Channel;
 import java.util.Arrays;
 
 public class RpcServiceHandler implements InvocationHandler {
@@ -18,8 +18,7 @@ public class RpcServiceHandler implements InvocationHandler {
     private String namespace;
     @Setter
     private Class<?> apiClass;
-    CallbackFactory callbackFactory = new CallbackFactory();
-    private RpcChannelMixedPool channelMixedPool = null;
+    private CallbackFactory callbackFactory = CallbackFactory.factory();
 
     public RpcServiceHandler(String namespace) {
         this.namespace = namespace;
@@ -33,38 +32,39 @@ public class RpcServiceHandler implements InvocationHandler {
         }
 
         String apiKey = rpcApi.api();
+
+        RpcChannel channel = null;
+
+
+        RpcRequest request = new RpcRequest();
+        if (apiKey == null || "".equals(apiKey)) {
+            request.setClazz(method.getDeclaringClass().getName());
+            request.setMethod(method.getName());
+        } else {
+            request.setApi(apiKey);
+        }
+        Callback callback = null;
+
+        callback = this.processParams(request, args);
+
+        Class<? extends  Callback> callbackClass = rpcApi.callback();
+        if (!callbackClass.isAssignableFrom(Callback.NoneCallback.class)) {
+            callback = this.callbackFactory.create(callbackClass);
+        }
+
         RpcChannelPoolManager poolManager = RpcChannelMixedPool.INSTANCE.poolManager(namespace);
         if (poolManager == null) {
             throw new UnsupportedOperationException();
         }
-        RpcChannel channel = null;
+
         try {
             channel = poolManager.borrow();
-            RpcRequest request = new RpcRequest();
-            if (apiKey.equals("")) {
-                request.setClazz(method.getDeclaringClass().getName());
-                request.setMethod(method.getName());
-            } else {
-                request.setApi(apiKey);
-            }
-
-            Class<?>[] paramTypes = method.getParameterTypes();
-            String[] typeStrings = new String[paramTypes.length];
-            for (int i = 0; i < paramTypes.length; i++) {
-                typeStrings[i] = paramTypes[i].getName();
-            }
-            method.getParameterTypes();
-
-
-            request.setParamTypes(typeStrings);
-            request.setParams(args);
-            RpcChannel rpcChannel = null;
-            try {
-                rpcChannel = RpcChannelMixedPool.INSTANCE.poolManager(namespace).borrow();
-                RpcFuture future = rpcChannel.call(request);
+            if (callback == null) {
+                RpcFuture future = channel.call(request);
                 return future.get();
-            } finally {
-                RpcChannelMixedPool.INSTANCE.poolManager(namespace).giveBack(rpcChannel);
+            } else {
+                channel.call(request, RpcCallbackFactory.create(callback));
+                return Void.TYPE;
             }
 
         } finally {
@@ -72,11 +72,34 @@ public class RpcServiceHandler implements InvocationHandler {
                 poolManager.giveBack(channel);
             }
         }
+    }
 
-//        return null;
+    private Callback processParams(RpcRequest request, Object[] args) {
+        if (args == null || args.length == 0) {
+            return null;
+        }
+
+        int lastIndex = args.length - 1;
+        Callback callback = null;
+
+        if (args[lastIndex] instanceof Callback) {
+            callback = (Callback)args[lastIndex];
+        } else {
+            lastIndex++;
+        }
+
+        request.setParams(Arrays.copyOfRange(args, 0, lastIndex));
+
+        Class<?>[] paramTypes = new Class<?>[lastIndex];
+        for (int i = 0; i < lastIndex; i++) {
+            paramTypes[i] = args[i].getClass();
+        }
+
+        return callback;
     }
 
     public static void main(String args[]) {
-
+        String[] strs = new String[]{"1", "2", "3"};
+        System.out.println(Arrays.copyOfRange(strs, 0, strs.length).length);
     }
 }

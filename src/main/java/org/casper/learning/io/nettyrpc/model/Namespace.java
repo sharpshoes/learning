@@ -14,7 +14,7 @@ public class Namespace {
 
     private String namespace;
 
-    private List<ProducerHost> hosts = new ArrayList<>();
+    private List<ServiceProvider> hosts = new ArrayList<>();
     private List<RpcApi> apiList = new ArrayList<>();
 
 }

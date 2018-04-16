@@ -13,5 +13,5 @@ public @interface RpcApi {
 
     public String api() default "";
     public String version() default "1";
-    public Class<? extends Callback> callback() default Callback.class;
+    public Class<? extends Callback> callback() default Callback.NoneCallback.class;
 }

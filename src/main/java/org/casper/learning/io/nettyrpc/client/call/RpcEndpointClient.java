@@ -7,8 +7,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Getter;
-import org.casper.learning.io.nettyrpc.client.call.RpcChannelHandler;
-import org.casper.learning.io.nettyrpc.model.ProducerHost;
+import org.casper.learning.io.nettyrpc.model.ServiceProvider;
 import org.casper.learning.io.nettyrpc.protocol.RpcDecoder;
 import org.casper.learning.io.nettyrpc.protocol.RpcEncoder;
 import org.casper.learning.io.nettyrpc.protocol.RpcRequest;
@@ -31,7 +30,7 @@ public class RpcEndpointClient {
     @Getter
     private int port;
 
-    public RpcEndpointClient(ProducerHost producerHost) {
+    public RpcEndpointClient(ServiceProvider producerHost) {
         this.namespace = producerHost.getNamespace();
         this.host = producerHost.getHost();
         this.port = producerHost.getPort();

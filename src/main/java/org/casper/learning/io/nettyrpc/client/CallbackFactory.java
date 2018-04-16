@@ -10,18 +10,29 @@ import java.util.concurrent.locks.ReentrantLock;
 public class CallbackFactory {
 
     private Map<Class<? extends Callback>, Callback> callbackMap = new HashMap<>();
-    private CallbackFactoryStrategy callbackFactoryStrategy = new DefaultCallbackFactoryStrategy();
+    private volatile CallbackFactoryStrategy callbackFactoryStrategy = new DefaultCallbackFactoryStrategy();
     private  Lock lock = new ReentrantLock();
 
-    public CallbackFactory(CallbackFactoryStrategy callbackFactoryStrategy) {
-        this.callbackFactoryStrategy = callbackFactoryStrategy;
-    }
+    private static CallbackFactory instance = new CallbackFactory();
 
-    public CallbackFactory() {
+    private CallbackFactory() {
 
     }
 
-    public Callback getCallbackInstance(Class<? extends Callback> type) {
+    public static CallbackFactory factory() {
+        return instance;
+    }
+
+    public static CallbackFactory factory(CallbackFactoryStrategy strategy) {
+        return instance.strategy(strategy);
+    }
+
+    private CallbackFactory strategy(CallbackFactoryStrategy strategy) {
+        this.callbackFactoryStrategy = strategy;
+        return this;
+    }
+
+    public Callback create(Class<? extends Callback> type) {
 
         if (callbackMap.containsKey(type)) {
             return callbackMap.get(type);

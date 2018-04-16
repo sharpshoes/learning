@@ -1,5 +1,6 @@
 package org.casper.learning.io.nettyrpc.client.call;
 
+import lombok.Builder;
 import lombok.Setter;
 import org.casper.learning.io.nettyrpc.client.Callback;
 import org.casper.learning.io.nettyrpc.protocol.RpcRequest;
@@ -20,6 +21,7 @@ public abstract class AbstractRpcCallback implements RpcCallback {
         this.callback = callback;
     }
 
+    @Override
     public void run() {
         if (!this.response.isError()) {
             this.success(request, response);

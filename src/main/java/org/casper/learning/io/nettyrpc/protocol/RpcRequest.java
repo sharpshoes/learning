@@ -18,7 +18,6 @@ public class RpcRequest {
     private String clazz;
     private String method;
 
-    private String[] paramTypes;
     private Object[] params;
     private String returnType;
     private String Exception;
