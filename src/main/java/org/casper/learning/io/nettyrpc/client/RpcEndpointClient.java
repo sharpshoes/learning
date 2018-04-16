@@ -58,7 +58,7 @@ public class RpcEndpointClient {
             });
     }
 
-    public RpcCallChannel connect() throws InterruptedException {
+    public RpcChannelHandler connect() throws InterruptedException {
         return bootstrap.connect().sync().channel().pipeline().get(RpcChannelHandler.class);
     }
 

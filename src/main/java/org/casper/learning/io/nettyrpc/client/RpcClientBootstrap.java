@@ -10,11 +10,7 @@ import java.util.List;
 /**
  * 启动器
  */
-public class RpcSerivceBootstrap {
-
-    public void start() {
-
-    }
+public class RpcClientBootstrap {
 
     public void init(List<Namespace> namespaceList) {
         namespaceList.forEach(namespace -> {
@@ -36,9 +32,5 @@ public class RpcSerivceBootstrap {
             RpcChannelMixedPool.INSTANCE.register(client);
         } catch (Exception ex) {
         }
-    }
-
-    public void unregister(ProducerHost producerHost) {
-
     }
 }

@@ -4,6 +4,8 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.Getter;
+import lombok.Setter;
+import org.casper.learning.io.nettyrpc.client.pool2.PooledRpcChannel;
 import org.casper.learning.io.nettyrpc.protocol.RpcRequest;
 import org.casper.learning.io.nettyrpc.protocol.RpcResponse;
 
@@ -17,14 +19,12 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * @author Casper
  */
-public class RpcChannelHandler extends SimpleChannelInboundHandler<RpcResponse> implements RpcCallChannel {
+public class RpcChannelHandler extends SimpleChannelInboundHandler<RpcResponse> implements RpcChannel {
 
     @Getter
     private Channel channel = null;
-    @Getter
-    private String namespace;
-    @Getter
-    private String host;
+    @Setter
+    private PooledRpcChannel pooledChannel;
 
     private Map<String, RpcFuture> rpcFutureMap = new ConcurrentHashMap<>();
     private Set<HandlerListener> handlerListeners = new HashSet<>();
@@ -116,6 +116,11 @@ public class RpcChannelHandler extends SimpleChannelInboundHandler<RpcResponse> 
     @Override
     public void close() {
 
+    }
+
+    @Override
+    public PooledRpcChannel pooledChannel() {
+        return pooledChannel;
     }
 
 

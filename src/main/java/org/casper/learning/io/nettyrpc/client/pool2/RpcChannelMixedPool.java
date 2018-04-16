@@ -1,9 +1,7 @@
 package org.casper.learning.io.nettyrpc.client.pool2;
 
-import org.casper.learning.io.nettyrpc.client.RpcCallChannel;
 import org.casper.learning.io.nettyrpc.client.RpcEndpointClient;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
@@ -20,8 +18,7 @@ public class RpcChannelMixedPool {
 
     public static RpcChannelMixedPool INSTANCE = new RpcChannelMixedPool();
 
-    public Map<String, RpcChannelPoolManager> mixedPool = new HashMap<>();
-    Map<String, RpcCallChannel> borrowedCache = new ConcurrentHashMap<>();
+    public Map<String, RpcChannelPoolManager> mixedPool = new ConcurrentHashMap<>();
 
     Lock lock = new ReentrantLock();
 
@@ -40,25 +37,15 @@ public class RpcChannelMixedPool {
         }
     }
 
-//    public void unregister(RpcEndpointClient endpointClient) {
-//        try {
-//            lock.lock();
-//            if (mixedPool.containsKey(endpointClient.getNamespace())) {
-//                mixedPool.put(endpointClient.getNamespace(), new RpcChannelPoolManager());
-//            }
-//
-//        } finally {
-//            lock.unlock();
-//        }
-//
-//    }
-
-    public RpcCallChannel borrow(String namespace) {
-
-        return null;
+    public void unregister(RpcEndpoint rpcEndpoint) {
+        String namespace = rpcEndpoint.getNamespace();
+        if (mixedPool.containsKey(namespace)) {
+            poolManager(namespace).unregister(rpcEndpoint);
+        }
     }
 
-    public void putBack(String namespace, RpcCallChannel rpcCallChannel) {
-
+    public RpcChannelPoolManager poolManager(String namespace) {
+        return this.mixedPool.get(namespace);
     }
+
 }
