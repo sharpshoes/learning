@@ -73,6 +73,7 @@ public class RpcServiceHandler implements InvocationHandler {
             return future.get();
         } else {
             channel.call(request, RpcCallbackFactory.create(callback));
+            poolManager.giveBack(channel);
             return Void.TYPE;
         }
 
