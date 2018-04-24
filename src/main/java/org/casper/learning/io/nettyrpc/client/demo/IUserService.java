@@ -1,4 +1,4 @@
-package org.casper.learning.io.nettyrpc.demo;
+package org.casper.learning.io.nettyrpc.client.demo;
 
 import org.casper.learning.io.nettyrpc.client.Callback;
 import org.casper.learning.io.nettyrpc.client.annotation.RpcApi;
@@ -20,7 +20,6 @@ public interface IUserService {
     public void listUser(Callback<List<UserInfo>> callback);
 
     public static class UserCreateCallback implements Callback<UserInfo> {
-
 
         @Override
         public void action(UserInfo value, Exception ex) {

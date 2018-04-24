@@ -1,8 +1,6 @@
-package org.casper.learning.io.nettyrpc.demo;
+package org.casper.learning.io.nettyrpc.client.demo;
 
 import lombok.Data;
-
-import java.util.List;
 
 @Data
 public class UserInfo {
