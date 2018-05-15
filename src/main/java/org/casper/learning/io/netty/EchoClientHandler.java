@@ -11,23 +11,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-@Sharable
+/**
+ * @author Casper
+ */
 public class EchoClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
-
-	@Override
-	public void channelActive(ChannelHandlerContext ctx) {
-//		ctx.writeAndFlush(Unpooled.copiedBuffer("Netty rocks!",
-//				CharsetUtil.UTF_8));
-//		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-//		while (true) {
-//			System.out.println("R: ");
-//			try {
-//				ctx.writeAndFlush(Unpooled.copiedBuffer(reader.readLine(), CharsetUtil.UTF_8));
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//		}
-	}
 
 	@Override
 	public void channelRead0(ChannelHandlerContext ctx, ByteBuf in) {

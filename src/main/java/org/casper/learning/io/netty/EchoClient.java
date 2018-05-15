@@ -3,13 +3,18 @@ package org.casper.learning.io.netty;
 import java.net.InetSocketAddress;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.CharsetUtil;
 
+/**
+ * @author Casper
+ */
 public class EchoClient {
 
     private final String host;
@@ -31,7 +36,7 @@ public class EchoClient {
              .remoteAddress(new InetSocketAddress(host, port))
              .handler(new ChannelInitializer<SocketChannel>() {
                  @Override
-                 public void initChannel(SocketChannel ch) 
+                 public void initChannel(SocketChannel ch)
                      throws Exception {
                      ch.pipeline().addLast(
                              new EchoClientHandler());
@@ -39,9 +44,12 @@ public class EchoClient {
              });
 
             ChannelFuture f = b.connect().sync();
-            f.channel().writeAndFlush("Casper");
-            f.channel().writeAndFlush("Casper Think");
-//            f.channel().closeFuture().sync();
+            if (f.channel().isActive()) {
+                f.channel().writeAndFlush(Unpooled.copiedBuffer("Hello Casper!", CharsetUtil.UTF_8));
+            }
+
+            Thread.sleep(1000);
+
         } finally {
             group.shutdownGracefully().sync();
         }
