@@ -1,3 +1,5 @@
+地址：http://renlian.yishanzhi.com/
+
 返回值约定
 {
     "data": ,  // 接口数据
@@ -9,7 +11,7 @@
 
 
 接口一：发送验证码，POST
-/api/user/sentVerifyCode?phone=${phone}
+/api/user/sendVerifyCode?phone=${phone}
 
 接口二：注册， POST
 /api/user/register
